@@ -1,13 +1,13 @@
-/****************************************************************
-*  Header files
-*/
+//******************************************************************************
+//  Header files
+//
 #include "jit.swarm.h"
 
-/****************************************************************
-*  Initialize the gene representation array for the evolutionary algorithm.
-*/
-void ea_init_gene_repr(t_swarm *x)
-{
+//******************************************************************************
+//  Initialize the gene representation array for the evolutionary algorithm.
+//
+void ea_init_gene_repr(t_swarm* x) {
+
   ea_gene_repr_set(x, GENE_INERT_MUL, 0.9f, 1, 1.2f, ea_fct_scale_exp, true, gensym("inert"));
   ea_gene_repr_set(x, GENE_COHES_MUL, 0, 1, 10, ea_fct_scale_exp, true, gensym("cohes"));
   ea_gene_repr_set(x, GENE_ALIGN_MUL, 0, 1, 10, ea_fct_scale_exp, true, gensym("align"));
@@ -24,12 +24,12 @@ void ea_init_gene_repr(t_swarm *x)
   return;
 }
 
-/****************************************************************
-*  Initialize the gene representation array for the evolutionary algorithm.
-*/
-void ea_init_gene_rec(t_swarm *x)
-{
-  t_gene_bank *gene_rec;
+//******************************************************************************
+//  Initialize the gene representation array for the evolutionary algorithm.
+//
+void ea_init_gene_rec(t_swarm* x) {
+
+  t_gene_bank* gene_rec;
   for (int g = 0; g < GENE_REC_CNT; g++) {
     gene_rec = x->gene_bank_arr + g;
 
@@ -39,7 +39,7 @@ void ea_init_gene_rec(t_swarm *x)
 
     x->init_fct = ea_fct_init_lin;
     ea_init_gene_nval(gene_rec->gene_nval, x);
-    
+
     x->gene_bank_sort[g] = g;
   }
 
@@ -48,11 +48,11 @@ void ea_init_gene_rec(t_swarm *x)
   return;
 }
 
-/****************************************************************
-*  Calculate the agent's fitness.
-*/
-void ea_agent_fitness(t_swarm *x, t_agent *agent)
-{
+//******************************************************************************
+//  Calculate the agent's fitness.
+//
+void ea_agent_fitness(t_swarm* x, t_agent* agent) {
+
   TRACE("ea_agent_fitness");
 
   t_swr_float fit_xy = 0;
@@ -65,7 +65,7 @@ void ea_agent_fitness(t_swarm *x, t_agent *agent)
     fit_xy += (agent->bin_xy[XY] - avg) * (agent->bin_xy[XY] - avg);
   }
   // Penalize out-of-bounds count
-  fit_xy += agent->bin_xy[BIN_CNT_X * BIN_CNT_Y] * agent->bin_xy[BIN_CNT_X * BIN_CNT_Y];  
+  fit_xy += agent->bin_xy[BIN_CNT_X * BIN_CNT_Y] * agent->bin_xy[BIN_CNT_X * BIN_CNT_Y];
   fit_xy = sqrtf(1 / (1 + fit_xy / (BIN_CNT_X * BIN_CNT_Y + 1)));
 
   // Calculate the square of the euclidian distance to a uniform velocity distribution
@@ -95,15 +95,15 @@ void ea_agent_fitness(t_swarm *x, t_agent *agent)
   return;
 }
 
-/****************************************************************
-*  Store the agent after it died.
-*/
-void ea_agent_store(t_swarm *x, t_agent *agent)
-{
+//******************************************************************************
+//  Store the agent after it died.
+//
+void ea_agent_store(t_swarm* x, t_agent* agent) {
+
   TRACE("ea_agent_store");
 
-  t_gene_bank *rec = x->gene_bank_arr;
-  t_swr_ind *sort = x->gene_bank_sort;
+  t_gene_bank* rec = x->gene_bank_arr;
+  t_swr_ind* sort = x->gene_bank_sort;
   t_swr_ind rec_ind = (t_swr_ind)(x->gene_bank_ptr - x->gene_bank_arr);
 
   t_swr_ind ins = 0;   // important if new fitness lower than all others
@@ -145,15 +145,15 @@ void ea_agent_store(t_swarm *x, t_agent *agent)
   return;
 }
 
-/****************************************************************
-*  Send statistics about the agent through the dumpout outlet.
-*/
-void ea_agent_stat(t_swarm *x, t_agent *agent)
-{
+//******************************************************************************
+//  Send statistics about the agent through the dumpout outlet.
+//
+void ea_agent_stat(t_swarm* x, t_agent* agent) {
+
   TRACE("ea_agent_stat");
 
   t_atom argv[max(BIN_CNT_X * BIN_CNT_Y, BIN_CNT_VEL)];
-  t_atom *atom = argv;
+  t_atom* atom = argv;
 
   // Get the maximum count in the spatial bin
   t_swr_cnt max_cnt = 0;
@@ -188,14 +188,14 @@ void ea_agent_stat(t_swarm *x, t_agent *agent)
   return;
 }
 
-/****************************************************************
-*  Send statistics about the swarm through the dumpout outlet.
-*/
-void ea_swarm_stat(t_swarm *x)
-{
+//******************************************************************************
+//  Send statistics about the swarm through the dumpout outlet.
+//
+void ea_swarm_stat(t_swarm* x) {
+
   TRACE("ea_swarm_stat");
 
-  t_agent *agent;
+  t_agent* agent;
   t_swr_float nval_avg[GENE_CNT];
   t_swr_float nval_std[GENE_CNT];
   t_atom argv[GENE_CNT];
@@ -205,7 +205,7 @@ void ea_swarm_stat(t_swarm *x)
     nval_avg[g] = 0;
     nval_std[g] = 0;
   }
-  
+
   // Calculate the average
   for (t_swr_ind ind = 0; ind < x->agent_cnt; ind++) {
     agent = x->agent_arr + (x->agent_act[ind]);
@@ -241,17 +241,17 @@ void ea_swarm_stat(t_swarm *x)
   return;
 }
 
-/****************************************************************
-*  Selection by rank.
-*
-*  Select 1 or 2 randomly out of a set number of the best ones.
-*
-*  @param ind1 A pointer to the first index.
-*  @param ind2 A pointer to the second index. Pass NULL if only one needed.
-*  @param out_of The number of best agents to draw from.
-*/
-void ea_select_rank(t_swarm *x, t_swr_ind *ind1, t_swr_ind *ind2, t_swr_ind out_of)
-{
+//******************************************************************************
+//  Selection by rank.
+//
+//  Select 1 or 2 randomly out of a set number of the best ones.
+//
+//  @param ind1 A pointer to the first index.
+//  @param ind2 A pointer to the second index. Pass NULL if only one needed.
+//  @param out_of The number of best agents to draw from.
+//
+void ea_select_rank(t_swarm* x, t_swr_ind* ind1, t_swr_ind* ind2, t_swr_ind out_of) {
+
   *ind1 = rand() / (RAND_MAX / out_of + 1);
 
   // If a second index is requested
@@ -259,41 +259,42 @@ void ea_select_rank(t_swarm *x, t_swr_ind *ind1, t_swr_ind *ind2, t_swr_ind out_
     if (out_of > 1) {
       *ind2 = rand() / (RAND_MAX / (out_of - 1) + 1);
       *ind2 += (*ind2 >= *ind1) ? 1 : 0;
-    } else { *ind2 = 0; }
+    } else { *ind2 = 0;
+  }
   }
   return;
 }
 
-/****************************************************************
-*  Selection by roulette.
-*
-*  Select 1 or 2 using the fitnesses as a probability distribution.
-*
-*  @param ind1 A pointer to the first index.
-*  @param ind2 A pointer to the second index. Pass NULL if only one needed.
-*  @param N Not used, necessary for function pointer typedef.
-*/
-void ea_select_roulette(t_swarm *x, t_swr_ind *ind1, t_swr_ind *ind2, t_swr_ind N)
-{
+//******************************************************************************
+//  Selection by roulette.
+//
+//  Select 1 or 2 using the fitnesses as a probability distribution.
+//
+//  @param ind1 A pointer to the first index.
+//  @param ind2 A pointer to the second index. Pass NULL if only one needed.
+//  @param N Not used, necessary for function pointer typedef.
+//
+void ea_select_roulette(t_swarm* x, t_swr_ind* ind1, t_swr_ind* ind2, t_swr_ind N) {
+
   *ind1 = ea_select_roulette_util(x, NO_EXCLUDE);
   if (ind2) { *ind2 = ea_select_roulette_util(x, *ind1); }
 
   return;
 }
 
-/****************************************************************
-*  Selection by tournament.
-*
-*  Select 2 by roulette and keep the best. Repeat if necessary.
-*
-*  @param ind1 A pointer to the first index.
-*  @param ind2 A pointer to the second index. Pass NULL if only one needed.
-*  @param N Not used, necessary for function pointer typedef.
-*/
-void ea_select_tournament(t_swarm *x, t_swr_ind *ind1, t_swr_ind *ind2, t_swr_ind N)
-{
-  t_gene_bank *rec = x->gene_bank_arr;
-  t_swr_ind *sort = x->gene_bank_sort;
+//******************************************************************************
+//  Selection by tournament.
+//
+//  Select 2 by roulette and keep the best. Repeat if necessary.
+//
+//  @param ind1 A pointer to the first index.
+//  @param ind2 A pointer to the second index. Pass NULL if only one needed.
+//  @param N Not used, necessary for function pointer typedef.
+//
+void ea_select_tournament(t_swarm* x, t_swr_ind* ind1, t_swr_ind* ind2, t_swr_ind N) {
+
+  t_gene_bank* rec = x->gene_bank_arr;
+  t_swr_ind* sort = x->gene_bank_sort;
 
   t_swr_ind i, j;
 
@@ -313,21 +314,21 @@ void ea_select_tournament(t_swarm *x, t_swr_ind *ind1, t_swr_ind *ind2, t_swr_in
   return;
 }
 
-/****************************************************************
-*  Utility function to selection by roulette.
-*
-*  Chooses from the whole population,
-*  with the fitnesses used as a probability distribution.
-*
-*  @param exclude An index to exclude from the selection.
-*    Use NO_EXCLUDE if no exclusion.
-*
-*  @return An index.
-*/
-t_swr_ind ea_select_roulette_util(t_swarm *x, t_swr_ind exclude)
-{
-  t_gene_bank *rec = x->gene_bank_arr;
-  t_swr_ind *sort = x->gene_bank_sort;
+//******************************************************************************
+//  Utility function to selection by roulette.
+//
+//  Chooses from the whole population,
+//  with the fitnesses used as a probability distribution.
+//
+//  @param exclude An index to exclude from the selection.
+//  Use NO_EXCLUDE if no exclusion.
+//
+//  @return An index.
+//
+t_swr_ind ea_select_roulette_util(t_swarm* x, t_swr_ind exclude) {
+
+  t_gene_bank* rec = x->gene_bank_arr;
+  t_swr_ind* sort = x->gene_bank_sort;
 
   // Calculate the sum of the fitness
   t_swr_float sum = 0;
@@ -353,17 +354,17 @@ t_swr_ind ea_select_roulette_util(t_swarm *x, t_swr_ind exclude)
   return (ind - 1);
 }
 
-/****************************************************************
-*  Single crossover of two records.
-*
-*  @param agent A pointer to the agent.
-*  @param ind1 The index of the first record (for sorted array).
-*  @param ind2 The index of the first record (for sorted array).
-*/
-void ea_cross_single(t_swarm *x, t_agent *agent, t_swr_ind ind1, t_swr_ind ind2)
-{
-  t_gene_bank *rec = x->gene_bank_arr;
-  t_swr_ind *sort = x->gene_bank_sort;
+//******************************************************************************
+//  Single crossover of two records.
+//
+//  @param agent A pointer to the agent.
+//  @param ind1 The index of the first record (for sorted array).
+//  @param ind2 The index of the first record (for sorted array).
+//
+void ea_cross_single(t_swarm* x, t_agent* agent, t_swr_ind ind1, t_swr_ind ind2) {
+
+  t_gene_bank* rec = x->gene_bank_arr;
+  t_swr_ind* sort = x->gene_bank_sort;
   t_swr_ind g1;
 
   // Choose a gene index at random
@@ -381,17 +382,17 @@ void ea_cross_single(t_swarm *x, t_agent *agent, t_swr_ind ind1, t_swr_ind ind2)
   return;
 }
 
-/****************************************************************
-*  Double crossover of two records.
-*
-*  @param agent A pointer to the agent.
-*  @param ind1 The index of the first record (for sorted array).
-*  @param ind2 The index of the first record (for sorted array).
-*/
-void ea_cross_double(t_swarm *x, t_agent *agent, t_swr_ind ind1, t_swr_ind ind2)
-{
-  t_gene_bank *rec = x->gene_bank_arr;
-  t_swr_ind *sort = x->gene_bank_sort;
+//******************************************************************************
+//  Double crossover of two records.
+//
+//  @param agent A pointer to the agent.
+//  @param ind1 The index of the first record (for sorted array).
+//  @param ind2 The index of the first record (for sorted array).
+//
+void ea_cross_double(t_swarm* x, t_agent* agent, t_swr_ind ind1, t_swr_ind ind2) {
+
+  t_gene_bank* rec = x->gene_bank_arr;
+  t_swr_ind* sort = x->gene_bank_sort;
   t_swr_ind g1, g2, tmp;
 
   // Choose two non equal gene indexes at random
@@ -416,17 +417,17 @@ void ea_cross_double(t_swarm *x, t_agent *agent, t_swr_ind ind1, t_swr_ind ind2)
   return;
 }
 
-/****************************************************************
-*  Uniform crossover of two records.
-*
-*  @param agent A pointer to the agent.
-*  @param ind1 The index of the first record (for sorted array).
-*  @param ind2 The index of the first record (for sorted array).
-*/
-void ea_cross_uniform(t_swarm *x, t_agent *agent, t_swr_ind ind1, t_swr_ind ind2)
-{
-  t_gene_bank *rec = x->gene_bank_arr;
-  t_swr_ind *sort = x->gene_bank_sort;
+//******************************************************************************
+//  Uniform crossover of two records.
+//
+//  @param agent A pointer to the agent.
+//  @param ind1 The index of the first record (for sorted array).
+//  @param ind2 The index of the first record (for sorted array).
+//
+void ea_cross_uniform(t_swarm* x, t_agent* agent, t_swr_ind ind1, t_swr_ind ind2) {
+
+  t_gene_bank* rec = x->gene_bank_arr;
+  t_swr_ind* sort = x->gene_bank_sort;
   t_swr_ind r;
 
   // Crossover switching randomly at every index
@@ -442,11 +443,11 @@ void ea_cross_uniform(t_swarm *x, t_agent *agent, t_swr_ind ind1, t_swr_ind ind2
   return;
 }
 
-/****************************************************************
-*  Mutate the agent.
-*/
-void ea_mutate(t_swarm *x, t_agent *agent)
-{
+//******************************************************************************
+//  Mutate the agent.
+//
+void ea_mutate(t_swarm* x, t_agent* agent) {
+
   t_swr_float nval;
 
   // Loop through the genes and mutate
@@ -466,39 +467,39 @@ void ea_mutate(t_swarm *x, t_agent *agent)
   return;
 }
 
-/****************************************************************
-*  Initialize the normalized genome values at random.
-*/
-void ea_init_gene_nval(t_swr_float *nval, t_swarm *x)
-{
+//******************************************************************************
+//  Initialize the normalized genome values at random.
+//
+void ea_init_gene_nval(t_swr_float* nval, t_swarm* x) {
+
   for (int g = 0; g < GENE_CNT; g++) { nval[g] = x->init_fct(x); }
 }
 
-/****************************************************************
-*  Calculate the scaled genome values.
-*
-*  Uses the scaling function defined in the gene representation.
-*/
-void ea_calc_gene_val(t_swr_float *nval, t_swr_float *val, t_swarm *x)
-{
+//******************************************************************************
+//  Calculate the scaled genome values.
+//
+//  Uses the scaling function defined in the gene representation.
+//
+void ea_calc_gene_val(t_swr_float* nval, t_swr_float* val, t_swarm* x) {
+
   for (int g = 0; g < GENE_CNT; g++) {
     val[g] = x->gene_repr_arr[g].scale_fct(nval[g], x->gene_repr_arr + g);
   }
 }
 
-/****************************************************************
-*  Copy the normalized genome values.
-*/
-void ea_copy_gene_nval(t_swr_float *nval1, t_swr_float *nval2, t_swarm *x)
-{
+//******************************************************************************
+//  Copy the normalized genome values.
+//
+void ea_copy_gene_nval(t_swr_float* nval1, t_swr_float* nval2, t_swarm* x) {
+
   for (int g = 0; g < GENE_CNT; g++) { nval2[g] = nval1[g]; }
 }
 
-/****************************************************************
-*  Set the parameters for a gene representation.
-*/
-void ea_gene_repr_set(t_swarm *x, int g, t_swr_float min, t_swr_float mid, t_swr_float max, t_ea_scale scale, t_bool var, t_symbol *sym)
-{
+//******************************************************************************
+//  Set the parameters for a gene representation.
+//
+void ea_gene_repr_set(t_swarm* x, int g, t_swr_float min, t_swr_float mid, t_swr_float max, t_ea_scale scale, t_bool var, t_symbol* sym) {
+
   x->gene_repr_arr[g].min = min;
   x->gene_repr_arr[g].mid = mid;
   x->gene_repr_arr[g].max = max;
@@ -509,16 +510,16 @@ void ea_gene_repr_set(t_swarm *x, int g, t_swr_float min, t_swr_float mid, t_swr
   return;
 }
 
-/****************************************************************
-*  Post the GA parameters.
-*/
-void ea_post(t_swarm *x)
-{
+//******************************************************************************
+//  Post the GA parameters.
+//
+void ea_post(t_swarm* x) {
+
   post("EA:  cnt: %i - init_d: %.2f - mut_d: %.2f - mut_p: %.2f",
     GENE_CNT, x->init_d, x->mut_d, x->mut_p);
 
   post("Gene representation:");
-  t_gene_repr *gene_repr;
+  t_gene_repr* gene_repr;
   for (int g = 0; g < GENE_CNT; g++) {
     gene_repr = x->gene_repr_arr + g;
     post("  %i - %s:  min: %.2f - mid: %.2f - max: %.2f - variable: %i",
@@ -526,7 +527,7 @@ void ea_post(t_swarm *x)
   }
 
   post("Gene record:  Normalized gene values - Ptr:  %i", x->gene_bank_ptr - x->gene_bank_arr);
-  t_gene_bank *gene_rec;
+  t_gene_bank* gene_rec;
   for (int g = 0; g < GENE_REC_CNT; g++) {
     gene_rec = x->gene_bank_arr + g;
     post("  %i:  %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f", g,
@@ -546,14 +547,14 @@ void ea_post(t_swarm *x)
   return;
 }
 
-/****************************************************************
-*  Scaling functions
-*  
-*  Calculate a scaled gene value from an nvalue between 0 and 2.
-*  Used to convert the gene values into parameters.
-*/
-t_swr_float ea_fct_scale_plin(t_swr_float nval, t_gene_repr *gene_repr)
-{
+//******************************************************************************
+//  Scaling functions
+//
+//  Calculate a scaled gene value from an nvalue between 0 and 2.
+//  Used to convert the gene values into parameters.
+//
+t_swr_float ea_fct_scale_plin(t_swr_float nval, t_gene_repr* gene_repr) {
+
   if (nval <= 0) { return gene_repr->min; }
   if (nval >= 2) { return gene_repr->max; }
 
@@ -561,8 +562,8 @@ t_swr_float ea_fct_scale_plin(t_swr_float nval, t_gene_repr *gene_repr)
   return ((gene_repr->max - gene_repr->mid) * nval - gene_repr->max + 2 * gene_repr->mid);
 }
 
-t_swr_float ea_fct_scale_exp(t_swr_float nval, t_gene_repr *gene_repr)
-{
+t_swr_float ea_fct_scale_exp(t_swr_float nval, t_gene_repr* gene_repr) {
+
   if (nval <= 0) { return gene_repr->min; }
   if (nval >= 2) { return gene_repr->max; }
 
@@ -577,29 +578,29 @@ t_swr_float ea_fct_scale_exp(t_swr_float nval, t_gene_repr *gene_repr)
   return a * powf(v / u, nval) - a + gene_repr->min;
 }
 
-/****************************************************************
-*  Initialization functions
-*
-*  Get a random nvalue between 0 and 2.
-*/
-t_swr_float ea_fct_init_mid(t_swarm *x)
-{
+//******************************************************************************
+//  Initialization functions
+//
+//  Get a random nvalue between 0 and 2.
+//
+t_swr_float ea_fct_init_mid(t_swarm* x) {
+
   return 1;
 }
 
-t_swr_float ea_fct_init_lin(t_swarm *x)
-{
+t_swr_float ea_fct_init_lin(t_swarm* x) {
+
   return (1 + x->init_d * (2.0f * rand() / RAND_MAX - 1));
 }
 
-/****************************************************************
-*  Test the evolutionary algorithm
-*/
-void ea_test(t_swarm *x, t_symbol *sym, long argc, t_atom *argv)
-{
+//******************************************************************************
+//  Test the evolutionary algorithm
+//
+void ea_test(t_swarm* x, t_symbol* sym, long argc, t_atom* argv) {
+
   t_swr_ind ind1, ind2;
-  t_agent *agent;
-  t_swr_float *pf;
+  t_agent* agent;
+  t_swr_float* pf;
 
   if (atom_getsym(argv) == gensym("select")) {
 
@@ -627,7 +628,7 @@ void ea_test(t_swarm *x, t_symbol *sym, long argc, t_atom *argv)
     ind1 = CLAMP((t_swr_ind)atom_getlong(argv + 2), 0, GENE_REC_CNT - 1);
     ind2 = CLAMP((t_swr_ind)atom_getlong(argv + 3), 0, GENE_REC_CNT - 1);
     agent = x->agent_arr + CLAMP(atom_getlong(argv + 4), 0, x->agent_max - 1);
-    
+
     if (atom_getsym(argv + 1) == gensym("single")) {
       ea_cross_single(x, agent, ind1, ind2);
       post("test_ea cross single");

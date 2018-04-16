@@ -1,16 +1,16 @@
 #ifndef YC_JIT_SWARM_H_
 #define YC_JIT_SWARM_H_
 
-/****************************************************************
-*  Header files
-*/
+//******************************************************************************
+//  Header files
+//
 #include "jit.common.h"   // General Jitter header file
 #include "max.jit.mop.h"
 #include <time.h>         // To initialize random function
 
-/****************************************************************
-*  Preprocessor
-*/
+//******************************************************************************
+//  Preprocessor
+//
 #define PI 3.141593f
 
 #define AGENT_MAX_DEF 20
@@ -48,9 +48,9 @@
 #define CNTD_RAND  0xFFFF
 #define NO_EXCLUDE 0xFFFF
 
-/****************************************************************
-*  Macros for vector calculations.
-*/
+//******************************************************************************
+//  Macros for vector calculations.
+//
 #define V2D_V_e_S(V, S)       { V[0] = S;     V[1] = S;     }
 #define V2D_V_e_SS(V, S0, S1) { V[0] = S0;    V[1] = S1;    }
 #define V2D_V_e_V(V, V1)      { V[0] = V1[0]; V[1] = V1[1]; }
@@ -95,14 +95,14 @@
 #define V3D_N2_V_V(V1, V2)     ((V1[0]-V2[0]) * (V1[0]-V2[0]) + (V1[1]-V2[1]) * (V1[1]-V2[1]) + (V1[2]-V2[2]) * (V1[2]-V2[2]))
 #define V3D_N_V_V(V1, V2) sqrtf((V1[0]-V2[0]) * (V1[0]-V2[0]) + (V1[1]-V2[1]) * (V1[1]-V2[1]) + (V1[2]-V2[2]) * (V1[2]-V2[2]))
 
-/****************************************************************
-*  Jitter class pointer declaration as extern variable.
-*/
-extern void *_jit_swarm_class;
+//******************************************************************************
+//  Jitter class pointer declaration as extern variable.
+//
+extern void* _jit_swarm_class;
 
-/****************************************************************
-*  Typedef and structure declarations
-*/
+//******************************************************************************
+//  Typedef and structure declarations
+//
 // Variable types
 
 typedef t_uint16 t_swr_ind;     // for agent indexes and arrays
@@ -121,17 +121,17 @@ typedef struct _gene_bank  t_gene_bank;
 
 // Function pointers for evolutionary algorithm structures
 
-typedef t_swr_float (*t_ea_scale) (t_swr_float nval, t_gene_repr *gene_repr);
-typedef t_swr_float (*t_ea_init)  (t_swarm *x);
+typedef t_swr_float (*t_ea_scale) (t_swr_float nval, t_gene_repr* gene_repr);
+typedef t_swr_float (*t_ea_init)  (t_swarm* x);
 
-typedef void (*t_ea_select) (t_swarm *x, t_swr_ind *ind1, t_swr_ind *ind2, t_swr_ind N);
-typedef void (*t_ea_cross)  (t_swarm *x, t_agent *agent, t_swr_ind ind1, t_swr_ind ind2);
+typedef void (*t_ea_select) (t_swarm* x, t_swr_ind* ind1, t_swr_ind* ind2, t_swr_ind N);
+typedef void (*t_ea_cross)  (t_swarm* x, t_agent* agent, t_swr_ind ind1, t_swr_ind ind2);
 
-/****************************************************************
-*  Enum:  Bit flags to keep track of agent state
-*/
-typedef enum _swr_state
-{
+//******************************************************************************
+//  Enum:  Bit flags to keep track of agent state
+//
+typedef enum _swr_state {
+
   ST_NULL     = 0x00,
   ST_ACTIVE   = 0x01,
   ST_DORMANT  = 0x02,
@@ -144,11 +144,11 @@ typedef enum _swr_state
 #define IS_ACTIVE(agent)   ((agent)->state & ST_ACTIVE)
 #define IS_INACTIVE(agent) (~(agent)->state & ST_ACTIVE)
 
-/****************************************************************
-*  Enum:  Indexes to access the genes
-*/
-typedef enum _gene_ind
-{
+//******************************************************************************
+//  Enum:  Indexes to access the genes
+//
+typedef enum _gene_ind {
+
   GENE_INERT_MUL,
   GENE_COHES_MUL,
   GENE_ALIGN_MUL,
@@ -164,135 +164,135 @@ typedef enum _gene_ind
 
 } e_gene_ind;
 
-/****************************************************************
-*  Function declarations:  jit.swarm.c
-*/
+//******************************************************************************
+//  Function declarations:  jit.swarm.c
+//
 // Jitter object functions
 
 t_jit_err  jit_swarm_init (void);
-t_swarm   *jit_swarm_new  (void);
-void       jit_swarm_free (t_swarm *x);
+t_swarm*   jit_swarm_new  (void);
+void       jit_swarm_free (t_swarm* x);
 
-t_jit_err  jit_swarm_matrix_calc    (t_swarm *x, void *inputs, void *outputs);
-void       jit_swarm_calculate_ndim (t_swarm *x, long dimcount, long *dim, long planecount,
-             t_jit_matrix_info *in_minfo, char *bip, t_jit_matrix_info *out_minfo, char *bop);
-void       jit_minfo_post           (t_jit_matrix_info *minfo);
+t_jit_err  jit_swarm_matrix_calc    (t_swarm* x, void* inputs, void* outputs);
+void       jit_swarm_calculate_ndim (t_swarm* x, long dimcount, long* dim, long planecount,
+             t_jit_matrix_info* in_minfo, char* bip, t_jit_matrix_info* out_minfo, char* bop);
+void       jit_minfo_post           (t_jit_matrix_info* minfo);
 
 // Swarm functions
 
-void      swarm_init_param (t_swarm *x);
-t_jit_err swarm_new_agents  (t_swarm *x, t_swr_ind cur, t_swr_ind max);
+void      swarm_init_param (t_swarm* x);
+t_jit_err swarm_new_agents  (t_swarm* x, t_swr_ind cur, t_swr_ind max);
 
-void swarm_iter        (t_swarm *x);
-void swarm_average     (t_swarm *x);
-void swarm_move        (t_swarm *x);
-void swarm_track_stat  (t_swarm *x);
-void swarm_refresh_act (t_swarm *x);
+void swarm_iter        (t_swarm* x);
+void swarm_average     (t_swarm* x);
+void swarm_move        (t_swarm* x);
+void swarm_track_stat  (t_swarm* x);
+void swarm_refresh_act (t_swarm* x);
 
 // Agent functions
 
-t_agent *agent_add (t_swarm *x);
-void agent_remove  (t_swarm *x, t_agent *agent);
-void agent_init    (t_swarm *x, t_agent *agent);
-void agent_seed    (t_swarm *x, t_agent *agent, t_swr_cnt cntd);
-void agent_post    (t_swarm *x, t_agent *agent);
+t_agent* agent_add (t_swarm* x);
+void agent_remove  (t_swarm* x, t_agent* agent);
+void agent_init    (t_swarm* x, t_agent* agent);
+void agent_seed    (t_swarm* x, t_agent* agent, t_swr_cnt cntd);
+void agent_post    (t_swarm* x, t_agent* agent);
 
-void agent_state_change  (t_swarm *x, t_agent *agent);
-void agent_iter_hatching (t_swarm *x, t_agent *agent);
-void agent_iter_flying   (t_swarm *x, t_agent *agent);
-void agent_iter_dying    (t_swarm *x, t_agent *agent);
+void agent_state_change  (t_swarm* x, t_agent* agent);
+void agent_iter_hatching (t_swarm* x, t_agent* agent);
+void agent_iter_flying   (t_swarm* x, t_agent* agent);
+void agent_iter_dying    (t_swarm* x, t_agent* agent);
 
 // Utility functions
 
 t_swr_cnt rand_time(t_swr_float t, t_swr_float dt);
 
-/****************************************************************
-*  Function declarations:  swarm.ea.c
-*/
-void ea_test(t_swarm *x, t_symbol *sym, long argc, t_atom *argv);
+//******************************************************************************
+//  Function declarations:  swarm.ea.c
+//
+void ea_test(t_swarm* x, t_symbol* sym, long argc, t_atom* argv);
 
-void ea_init_gene_repr (t_swarm *x);
-void ea_init_gene_rec  (t_swarm *x);
+void ea_init_gene_repr (t_swarm* x);
+void ea_init_gene_rec  (t_swarm* x);
 
-void ea_agent_fitness (t_swarm *x, t_agent *agent);
-void ea_agent_store   (t_swarm *x, t_agent *agent);
-void ea_agent_stat    (t_swarm *x, t_agent *agent);
-void ea_swarm_stat    (t_swarm *x);
+void ea_agent_fitness (t_swarm* x, t_agent* agent);
+void ea_agent_store   (t_swarm* x, t_agent* agent);
+void ea_agent_stat    (t_swarm* x, t_agent* agent);
+void ea_swarm_stat    (t_swarm* x);
 
-void ea_select_rank       (t_swarm *x, t_swr_ind *ind1, t_swr_ind *ind2, t_swr_ind out_of);
-void ea_select_roulette   (t_swarm *x, t_swr_ind *ind1, t_swr_ind *ind2, t_swr_ind N);
-void ea_select_tournament (t_swarm *x, t_swr_ind *ind1, t_swr_ind *ind2, t_swr_ind N);
+void ea_select_rank       (t_swarm* x, t_swr_ind* ind1, t_swr_ind* ind2, t_swr_ind out_of);
+void ea_select_roulette   (t_swarm* x, t_swr_ind* ind1, t_swr_ind* ind2, t_swr_ind N);
+void ea_select_tournament (t_swarm* x, t_swr_ind* ind1, t_swr_ind* ind2, t_swr_ind N);
 
-t_swr_ind ea_select_roulette_util (t_swarm *x, t_swr_ind exclude);
+t_swr_ind ea_select_roulette_util (t_swarm* x, t_swr_ind exclude);
 
-void ea_cross_single  (t_swarm *x, t_agent *agent, t_swr_ind ind1, t_swr_ind ind2);
-void ea_cross_double  (t_swarm *x, t_agent *agent, t_swr_ind ind1, t_swr_ind ind2);
-void ea_cross_uniform (t_swarm *x, t_agent *agent, t_swr_ind ind1, t_swr_ind ind2);
+void ea_cross_single  (t_swarm* x, t_agent* agent, t_swr_ind ind1, t_swr_ind ind2);
+void ea_cross_double  (t_swarm* x, t_agent* agent, t_swr_ind ind1, t_swr_ind ind2);
+void ea_cross_uniform (t_swarm* x, t_agent* agent, t_swr_ind ind1, t_swr_ind ind2);
 
-void ea_mutate (t_swarm *x, t_agent *agent);
+void ea_mutate (t_swarm* x, t_agent* agent);
 
-void ea_init_gene_nval (t_swr_float *nval, t_swarm *x);
-void ea_calc_gene_val  (t_swr_float *nval, t_swr_float *val, t_swarm *x);
-void ea_copy_gene_nval (t_swr_float *nval1, t_swr_float *nval2, t_swarm *x);
+void ea_init_gene_nval (t_swr_float* nval, t_swarm* x);
+void ea_calc_gene_val  (t_swr_float* nval, t_swr_float* val, t_swarm* x);
+void ea_copy_gene_nval (t_swr_float* nval1, t_swr_float* nval2, t_swarm* x);
 
-void ea_gene_repr_set (t_swarm *x, int g, t_swr_float min, t_swr_float mid, t_swr_float max, t_ea_scale scale, t_bool var, t_symbol *sym);
-void ea_post (t_swarm *x);
+void ea_gene_repr_set (t_swarm* x, int g, t_swr_float min, t_swr_float mid, t_swr_float max, t_ea_scale scale, t_bool var, t_symbol* sym);
+void ea_post (t_swarm* x);
 
 // Scaling functions:  to be assigned to the function pointer in the structure
 
-t_swr_float ea_fct_scale_plin (t_swr_float nval, t_gene_repr *gene_repr);
-t_swr_float ea_fct_scale_exp  (t_swr_float nval, t_gene_repr *gene_repr);
+t_swr_float ea_fct_scale_plin (t_swr_float nval, t_gene_repr* gene_repr);
+t_swr_float ea_fct_scale_exp  (t_swr_float nval, t_gene_repr* gene_repr);
 
 // Initialization functions:  to be assigned to the function pointer in the structure
 
-t_swr_float ea_fct_init_mid (t_swarm *x);
-t_swr_float ea_fct_init_lin (t_swarm *x);
+t_swr_float ea_fct_init_mid (t_swarm* x);
+t_swr_float ea_fct_init_lin (t_swarm* x);
 
-/****************************************************************
-*  Function declarations:  swarm.interface.c
-*/
+//******************************************************************************
+//  Function declarations:  swarm.interface.c
+//
 // Message functions for the object
 
-void swarm_reset   (t_swarm *x);
-void swarm_add     (t_swarm *x, t_symbol *sym, long argc, t_atom *argv);
-void swarm_remove  (t_swarm *x, t_symbol *sym, long argc, t_atom *argv);
-void swarm_post    (t_swarm *x);
-void swarm_ea_post (t_swarm *x);
+void swarm_reset   (t_swarm* x);
+void swarm_add     (t_swarm* x, t_symbol* sym, long argc, t_atom* argv);
+void swarm_remove  (t_swarm* x, t_symbol* sym, long argc, t_atom* argv);
+void swarm_post    (t_swarm* x);
+void swarm_ea_post (t_swarm* x);
 
 // Object methods and attributes
 
-void swarm_init_method (void *swarm_class);
-void swarm_init_attr   (void *swarm_class);
-void swarm_init_attr_util(void *swarm_class, t_jit_object *attr,
-  const char *name, const char *label, const char *order, float min_, float max_);
+void swarm_init_method (void* swarm_class);
+void swarm_init_attr   (void* swarm_class);
+void swarm_init_attr_util(void* swarm_class, t_jit_object* attr,
+  const char* name, const char* label, const char* order, float min_, float max_);
 
 // Custom setter functions
 
-t_jit_err swarm_set_agent_max  (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_size       (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_select_fct (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_cross_fct  (t_swarm *x, void *attr, long argc, t_atom *argv);
+t_jit_err swarm_set_agent_max  (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_size       (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_select_fct (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_cross_fct  (t_swarm* x, void* attr, long argc, t_atom* argv);
 
-t_jit_err swarm_set_inert_mul  (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_cohes_mul  (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_align_mul  (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_attra_mul  (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_attra_thr  (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_separ_mul  (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_separ_thr  (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_bound_mul  (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_bound_thr  (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_brown_mul  (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_brown_prob (t_swarm *x, void *attr, long argc, t_atom *argv);
-t_jit_err swarm_set_gene_val   (t_swarm *x, e_gene_ind gene, t_swr_float *mod, long argc, t_atom *argv);
+t_jit_err swarm_set_inert_mul  (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_cohes_mul  (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_align_mul  (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_attra_mul  (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_attra_thr  (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_separ_mul  (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_separ_thr  (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_bound_mul  (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_bound_thr  (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_brown_mul  (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_brown_prob (t_swarm* x, void* attr, long argc, t_atom* argv);
+t_jit_err swarm_set_gene_val   (t_swarm* x, e_gene_ind gene, t_swr_float* mod, long argc, t_atom* argv);
 
-/****************************************************************
-*  Agent structure.
-*
-*  Used for now in a static array in the main Jitter structure.
-*/
-typedef struct _agent
-{
+//******************************************************************************
+//  Agent structure.
+//
+//  Used for now in a static array in the main Jitter structure.
+//
+typedef struct _agent {
+
   t_uint32 state;
 
   t_swr_cnt age;
@@ -325,34 +325,34 @@ typedef struct _agent
 
 } t_agent;
 
-/****************************************************************
-*  Gene representation structure.
-*
-*  One static array for the whole population.
-*  Describes each gene:
-*      - how it is scaled
-*      - whether it varies or not
-*/
-typedef struct _gene_repr
-{
+//******************************************************************************
+//  Gene representation structure.
+//
+//  One static array for the whole population.
+//  Describes each gene:
+//  - how it is scaled
+//  - whether it varies or not
+//
+typedef struct _gene_repr {
+
   t_swr_float min;    // the minimum value
   t_swr_float mid;    // the neutral value
   t_swr_float max;    // the maximum value
 
   t_ea_scale scale_fct;   // the scaling function from the nvalue to the value
   t_bool variable;        // whether the gene is variable or fixed
-  t_symbol *sym;          // a symbol for the gene
+  t_symbol* sym;          // a symbol for the gene
 
 } t_gene_repr;
 
-/****************************************************************
-*  Gene bank structure.
-*
-*  One static array for the whole population.
-*  Stores the genes of agents after they die.
-*/
-typedef struct _gene_bank
-{
+//******************************************************************************
+//  Gene bank structure.
+//
+//  One static array for the whole population.
+//  Stores the genes of agents after they die.
+//
+typedef struct _gene_bank {
+
   t_swr_float gene_nval[GENE_CNT];  // normalized genome
   t_swr_float fitness;              // fitness
   t_swr_float fit_xy;               // spatial fitness
@@ -361,15 +361,15 @@ typedef struct _gene_bank
 
 } t_gene_bank;
 
-/****************************************************************
-*  Jitter object structure.
-*/
-typedef struct _jit_swarm
-{
+//******************************************************************************
+//  Jitter object structure.
+//
+typedef struct _jit_swarm {
+
   t_object ob;
 
-  t_agent    *agent_arr;    // array of agents
-  t_swr_ind  *agent_act;    // array of active agents
+  t_agent*    agent_arr;    // array of agents
+  t_swr_ind*  agent_act;    // array of active agents
   t_swr_ind   agent_cnt;    // current number of agents
 
   // Attributes:  Basic - Swarm parameters
@@ -404,11 +404,11 @@ typedef struct _jit_swarm
   t_swr_float attra_thr;    // attraction threshold
   t_swr_float separ_mul;    // separation between agents
   t_swr_float separ_thr;    // separation threshold
-  t_swr_float bound_mul;    // boundary repulsion 
+  t_swr_float bound_mul;    // boundary repulsion
   t_swr_float bound_thr;    // boundary threshold
   t_swr_float brown_mul;    // brownian motion
   t_swr_float brown_prob;   // probability of brownian motion
-  
+
   // Attributes:  Basic - Display
 
   long length_x;
@@ -432,7 +432,7 @@ typedef struct _jit_swarm
   t_gene_repr gene_repr_arr[GENE_CNT];      // array of gene representations
 
   t_gene_bank  gene_bank_arr[GENE_REC_CNT];   // array for the gene bank
-  t_gene_bank *gene_bank_ptr;                 // pointer to the next element to replace in the bank
+  t_gene_bank* gene_bank_ptr;                 // pointer to the next element to replace in the bank
   t_uint16     gene_bank_sort[GENE_REC_CNT];  // array of indexes to sort the gene bank
 
   // Other structure members
@@ -440,8 +440,8 @@ typedef struct _jit_swarm
   t_swr_float pos_avg[3];   // store the average position
   t_swr_float vel_avg[3];   // store the average velocity
 
-  void *max_wrap;   // pointer to the max wrapper, stored at creation
+  void* max_wrap;   // pointer to the max wrapper, stored at creation
 
 } t_swarm;
 
-#endif 
+#endif

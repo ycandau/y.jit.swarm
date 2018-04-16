@@ -1,53 +1,53 @@
-/**
-*  jit.swarm - A Max MSP object for swarm sonification
-*  Yves Candau - ycandau@gmail.com
-*/
+//******************************************************************************
+//  jit.swarm - A Max MSP object for swarm sonification
+//  Yves Candau - ycandau@gmail.com
+//
 
-/****************************************************************
-*  @todo
-*
-*  Optimization:
-*    - vectorialize position and velocity instead of per agent
-*    - implement a nearest neighbor search instead of brute force
-*    - check cost of randomization function, rand() vs jit_rand() vs by hand
-*/
+//******************************************************************************
+//  @todo
+//
+//  Optimization:
+//  - vectorialize position and velocity instead of per agent
+//  - implement a nearest neighbor search instead of brute force
+//  - check cost of randomization function, rand() vs jit_rand() vs by hand
+//
 
-/****************************************************************
-*  Header files
-*/
+//******************************************************************************
+//  Header files
+//
 #include "jit.swarm.h"
 
-/****************************************************************
-*  Jitter class pointer.
-*  Declared as extern in header file.
-*/
-void *_jit_swarm_class = NULL;
+//******************************************************************************
+//  Jitter class pointer.
+//  Declared as extern in header file.
+//
+void* _jit_swarm_class = NULL;
 
-/****************************************************************
-*  Jitter class initialization.
-*
-*  Create the Jitter class and the MOP wrappers.
-*  Create and setup the class attributes.
-*  Create and setup the class methods.
-*
-*  @return A Jitter error type: JIT_ERR_NONE
-*/
-t_jit_err jit_swarm_init(void)
-{
+//******************************************************************************
+//  Jitter class initialization.
+//
+//  Create the Jitter class and the MOP wrappers.
+//  Create and setup the class attributes.
+//  Create and setup the class methods.
+//
+//  @return A Jitter error type: JIT_ERR_NONE
+//
+t_jit_err jit_swarm_init(void) {
+
   TRACE("jit_swarm_init");
 
-	void *mop;
+  void* mop;
 
   // Create the Jitter class
-	_jit_swarm_class = jit_class_new(
+  _jit_swarm_class = jit_class_new(
     "jit_swarm",              // Jitter class name
     (method)jit_swarm_new,    // Jitter class constructor
     (method)jit_swarm_free,   // Jitter class destructor
-		sizeof(t_swarm),          // Jitter class size
+    sizeof(t_swarm),          // Jitter class size
     0L);
 
-	// Create a MOP wrapper
-	mop = jit_object_new(_jit_sym_jit_mop, 0, 4);
+  // Create a MOP wrapper
+  mop = jit_object_new(_jit_sym_jit_mop, 0, 4);
 
   // Unlink everything
   jit_mop_output_nolink(mop, 1);
@@ -57,7 +57,7 @@ t_jit_err jit_swarm_init(void)
 
   // Setup individual jit_mop_io objects for each matrix output
   // Position matrix: 3 float N
-  void *output1 = jit_object_method(mop, _jit_sym_getoutput, 1);
+  void* output1 = jit_object_method(mop, _jit_sym_getoutput, 1);
   jit_attr_setlong(output1, _jit_sym_minplanecount, 3);
   jit_attr_setlong(output1, _jit_sym_maxplanecount, 3);
   jit_attr_setlong(output1, _jit_sym_mindim, 0);
@@ -67,7 +67,7 @@ t_jit_err jit_swarm_init(void)
   jit_attr_setsym(output1, _jit_sym_types, SWR_FLOAT_SYM);
 
   // Signed normalized position matrix [-1, 1] : 3 float N
-  void *output2 = jit_object_method(mop, _jit_sym_getoutput, 2);
+  void* output2 = jit_object_method(mop, _jit_sym_getoutput, 2);
   jit_attr_setlong(output2, _jit_sym_minplanecount, 3);
   jit_attr_setlong(output2, _jit_sym_maxplanecount, 3);
   jit_attr_setlong(output2, _jit_sym_mindim, 0);
@@ -77,7 +77,7 @@ t_jit_err jit_swarm_init(void)
   jit_attr_setsym(output2, _jit_sym_types, SWR_FLOAT_SYM);
 
   // Scale matrix: 3 float N
-  void *output3 = jit_object_method(mop, _jit_sym_getoutput, 3);
+  void* output3 = jit_object_method(mop, _jit_sym_getoutput, 3);
   jit_attr_setlong(output3, _jit_sym_minplanecount, 3);
   jit_attr_setlong(output3, _jit_sym_maxplanecount, 3);
   jit_attr_setlong(output3, _jit_sym_mindim, 0);
@@ -87,7 +87,7 @@ t_jit_err jit_swarm_init(void)
   jit_attr_setsym(output3, _jit_sym_types, SWR_FLOAT_SYM);
 
   // Colour matrix: 4 float N (RGBA)
-  void *output4 = jit_object_method(mop, _jit_sym_getoutput, 4);
+  void* output4 = jit_object_method(mop, _jit_sym_getoutput, 4);
   jit_attr_setlong(output4, _jit_sym_minplanecount, 4);
   jit_attr_setlong(output4, _jit_sym_maxplanecount, 4);
   jit_attr_setlong(output4, _jit_sym_mindim, 0);
@@ -97,7 +97,7 @@ t_jit_err jit_swarm_init(void)
   jit_attr_setsym(output4, _jit_sym_types, SWR_FLOAT_SYM);
 
   // Add the MOP to the Jitter class
-	jit_class_addadornment(_jit_swarm_class, (t_jit_object *)mop);
+  jit_class_addadornment(_jit_swarm_class, (t_jit_object*)mop);
 
   // Initialize the object methods
   swarm_init_method(_jit_swarm_class);
@@ -106,22 +106,22 @@ t_jit_err jit_swarm_init(void)
   swarm_init_attr(_jit_swarm_class);
 
   // Register the Jitter class
-	jit_class_register(_jit_swarm_class);
+  jit_class_register(_jit_swarm_class);
 
-	return JIT_ERR_NONE;
+  return JIT_ERR_NONE;
 }
 
-/****************************************************************
-*  Jitter class constructor.
-*  
-*  @param x A pointer to the t_swarm structure.
-*/
-t_swarm *jit_swarm_new(void)
-{
+//******************************************************************************
+//  Jitter class constructor.
+//
+//  @param x A pointer to the t_swarm structure.
+//
+t_swarm* jit_swarm_new(void) {
+
   TRACE("jit_swarm_new");
 
-  t_swarm *x = NULL;
-  x = (t_swarm *)jit_object_alloc(_jit_swarm_class);
+  t_swarm* x = NULL;
+  x = (t_swarm*)jit_object_alloc(_jit_swarm_class);
 
   // Test the allocation and return NULL on error
   if (!x) {
@@ -138,57 +138,57 @@ t_swarm *jit_swarm_new(void)
   ea_init_gene_rec(x);
 
   // Initialize the parameters
-  swarm_init_param(x);   
+  swarm_init_param(x);
 
   // Allocate and initialize the agents
   x->agent_max = 0;
   x->agent_arr = NULL;
   x->agent_act = NULL;
   swarm_new_agents(x, 0, AGENT_MAX_DEF);
-  
+
   return x;
 }
 
-/****************************************************************
-*  Jitter class destructor.
-*  
-*  @param x A pointer to the t_swarm structure.
-*/
-void jit_swarm_free(t_swarm *x)
-{
+//******************************************************************************
+//  Jitter class destructor.
+//
+//  @param x A pointer to the t_swarm structure.
+//
+void jit_swarm_free(t_swarm* x) {
+
   TRACE("jit_swarm_free");
 
-  if (x->agent_arr) { jit_disposeptr((char *)x->agent_arr); }
-  if (x->agent_act) { jit_disposeptr((char *)x->agent_act); }
+  if (x->agent_arr) { jit_disposeptr((char*)x->agent_arr); }
+  if (x->agent_act) { jit_disposeptr((char*)x->agent_act); }
 
   // The Jitter object is freed from the Max wrapper
 
   return;
 }
 
-/****************************************************************
-*  Jitter matrices calculation.
-*
-*  Ensure that the matrices are valid, compatible, and if so, process.
-*  Called by matrix_calc and bang messages to the object.
-*
-*  @param x A pointer to the t_swarm structure.
-*  @param inputs A pointer to the list of input matrices.
-*  @param outputs A pointer to the list of output matrices.
-*
-*  @return A Jitter error type:  JIT_ERR_NONE or
-*    JIT_ERR_INVALID_PTR: Invalid pointers for the object or the matrices
-*    JIT_ERR_INVALID_OUTPUT: Invalid pointers for the data arrays
-*/
-t_jit_err jit_swarm_matrix_calc(t_swarm *x, void *inputs, void *outputs)
-{
+//******************************************************************************
+//  Jitter matrices calculation.
+//
+//  Ensure that the matrices are valid, compatible, and if so, process.
+//  Called by matrix_calc and bang messages to the object.
+//
+//  @param x A pointer to the t_swarm structure.
+//  @param inputs A pointer to the list of input matrices.
+//  @param outputs A pointer to the list of output matrices.
+//
+//  @return A Jitter error type:  JIT_ERR_NONE or
+//  JIT_ERR_INVALID_PTR: Invalid pointers for the object or the matrices
+//  JIT_ERR_INVALID_OUTPUT: Invalid pointers for the data arrays
+//
+t_jit_err jit_swarm_matrix_calc(t_swarm* x, void* inputs, void* outputs) {
+
   TRACE_F("jit_swarm_matrix_calc");
 
   t_jit_err err = JIT_ERR_NONE;
-  void *out_matr_1, *out_matr_2, *out_matr_3, *out_matr_4;
+  void* out_matr_1, *out_matr_2, *out_matr_3, *out_matr_4;
   t_ptr_int out_lock_1, out_lock_2, out_lock_3, out_lock_4;   // using t_ptr_int instead of long to avoid warning
   t_jit_matrix_info out_minfo_1, out_minfo_2, out_minfo_3, out_minfo_4;
-  t_swr_float *out_data_1, *out_data_2, *out_data_3, *out_data_4;
+  t_swr_float* out_data_1, *out_data_2, *out_data_3, *out_data_4;
 
   // Get the matrices
   out_matr_1 = jit_object_method(outputs, _jit_sym_getindex, 0);
@@ -233,9 +233,9 @@ t_jit_err jit_swarm_matrix_calc(t_swarm *x, void *inputs, void *outputs)
     }
 
     // Copy the data to the Jitter matrices
-    t_agent *agent;
-    t_swr_float *pos, *col, size;
-    t_swr_float *out_data_1_ref = out_data_1;
+    t_agent* agent;
+    t_swr_float* pos, *col, size;
+    t_swr_float* out_data_1_ref = out_data_1;
 
     for (t_swr_ind ind = 0; ind < x->agent_cnt; ind++) {
       agent = x->agent_arr + (x->agent_act[ind]);
@@ -283,38 +283,38 @@ out:
   return err;
 }
 
-/****************************************************************
-*  Recursive matrix calculation.
-*
-*  A recursive function to handle higher dimension matrices, by processing 2D sections.
-*  Not used here. Included to reference the general Jitter object template.
-*  Could be called directly or through a parallelization function.
-*  See jit_parallel_ndim_simplecalc1() for instance.
-*
-*  @param x A pointer to the t_swarm structure.
-*  @param dimcount The number of dimensions, recursively decreased.
-*  @param dim A pointer to the list of sizes per dimension list.
-*  @param planecount The planecount of the matrix.
-*  @param in_minfo A pointer to the input matrix information structure.
-*  @param bip A base pointer to the input matrix data array.
-*  @param out_minfo A pointer to the output matrix information structure.
-*  @param bop A base pointer to the output matrix data array.
-*/
-void jit_swarm_calculate_ndim(t_swarm *x, long dimcount, long *dim, long planecount,
-  t_jit_matrix_info *in_minfo, char *bip, t_jit_matrix_info *out_minfo, char *bop)
-{
+//******************************************************************************
+//  Recursive matrix calculation.
+//
+//  A recursive function to handle higher dimension matrices, by processing 2D sections.
+//  Not used here. Included to reference the general Jitter object template.
+//  Could be called directly or through a parallelization function.
+//  See jit_parallel_ndim_simplecalc1() for instance.
+//
+//  @param x A pointer to the t_swarm structure.
+//  @param dimcount The number of dimensions, recursively decreased.
+//  @param dim A pointer to the list of sizes per dimension list.
+//  @param planecount The planecount of the matrix.
+//  @param in_minfo A pointer to the input matrix information structure.
+//  @param bip A base pointer to the input matrix data array.
+//  @param out_minfo A pointer to the output matrix information structure.
+//  @param bop A base pointer to the output matrix data array.
+//
+void jit_swarm_calculate_ndim(t_swarm* x, long dimcount, long* dim, long planecount,
+  t_jit_matrix_info* in_minfo, char* bip, t_jit_matrix_info* out_minfo, char* bop) {
+
   return;
 }
 
-/****************************************************************
-*   Post information on a Jitter matrix information structure.
-*
-*   @param minfo A pointer to a matrix information structure.
-*
-*   @todo Currently only posts information for up to 3 planes. Generalize to any number.
-*/
-void jit_minfo_post(t_jit_matrix_info *minfo)
-{
+//******************************************************************************
+//  Post information on a Jitter matrix information structure.
+//
+//  @param minfo A pointer to a matrix information structure.
+//
+//  @todo Currently only posts information for up to 3 planes. Generalize to any number.
+//
+void jit_minfo_post(t_jit_matrix_info* minfo) {
+
   TRACE("jit_minfo_post");
 
   if (minfo->dimcount < 1) {
@@ -344,13 +344,13 @@ void jit_minfo_post(t_jit_matrix_info *minfo)
   return;
 }
 
-/****************************************************************
-*  Initialize the swarm system parameters to defaults.
-*  
-*  @param x A pointer to the t_swarm structure.
-*/
-void swarm_init_param(t_swarm *x)
-{
+//******************************************************************************
+//  Initialize the swarm system parameters to defaults.
+//
+//  @param x A pointer to the t_swarm structure.
+//
+void swarm_init_param(t_swarm* x) {
+
   TRACE("swarm_init_param");
 
   // Attributes:  Basic - Swarm parameters
@@ -360,7 +360,7 @@ void swarm_init_param(t_swarm *x)
   jit_attr_setfloat(x, gensym("size"),     1.0f);
 
   // Attributes:  Evolutionary parameters
-  
+
   jit_attr_setfloat(x, gensym("fit_xy_mul"), 1.0f);
   jit_attr_setfloat(x, gensym("fit_vel_mul"), 1.0f);
   jit_attr_setfloat(x, gensym("mut_d"), 0.1f);
@@ -407,17 +407,17 @@ void swarm_init_param(t_swarm *x)
   return;
 }
 
-/****************************************************************
-*  Allocate and initialize all the agents in the array.
-*
-*  @param x A pointer to the t_swarm structure.
-*  @param max The length of the array to allocate.
-*
-*  @return A Jitter error type:  JIT_ERR_NONE or
-*    JIT_ERR_OUT_OF_MEM: if there is an allocation error
-*/
-t_jit_err swarm_new_agents(t_swarm *x, t_swr_ind cur, t_swr_ind max)
-{
+//******************************************************************************
+//  Allocate and initialize all the agents in the array.
+//
+//  @param x A pointer to the t_swarm structure.
+//  @param max The length of the array to allocate.
+//
+//  @return A Jitter error type:  JIT_ERR_NONE or
+//  JIT_ERR_OUT_OF_MEM: if there is an allocation error
+//
+t_jit_err swarm_new_agents(t_swarm* x, t_swr_ind cur, t_swr_ind max) {
+
   TRACE("swarm_new_agents");
 
   // If the number is unchanged and the arrays already allocated: initialize
@@ -425,21 +425,21 @@ t_jit_err swarm_new_agents(t_swarm *x, t_swr_ind cur, t_swr_ind max)
 
   // If the arrays are already allocated: free and reset to NULL
   if (x->agent_arr || x->agent_act) {
-    jit_disposeptr((char *)x->agent_arr);
+    jit_disposeptr((char*)x->agent_arr);
     x->agent_arr = NULL;
-    jit_disposeptr((char *)x->agent_act);
+    jit_disposeptr((char*)x->agent_act);
     x->agent_act = NULL;
   }
 
   // Allocate and test the allocation
   x->agent_max = max;
-  x->agent_arr = (t_agent *)jit_newptr(sizeof(t_agent) * x->agent_max);
-  x->agent_act = (t_swr_ind *)jit_newptr(sizeof(t_swr_ind) * x->agent_max);
+  x->agent_arr = (t_agent*)jit_newptr(sizeof(t_agent) * x->agent_max);
+  x->agent_act = (t_swr_ind*)jit_newptr(sizeof(t_swr_ind) * x->agent_max);
 
   if ((!x->agent_arr) || (!x->agent_act)) {
     x->agent_cnt = 0;
     x->agent_max = 0;
-    jit_object_error((t_object *)x, "swarm_new_agents:  Allocation error for the agent arrays.");
+    jit_object_error((t_object*)x, "swarm_new_agents:  Allocation error for the agent arrays.");
     return JIT_ERR_OUT_OF_MEM;
   }
 
@@ -452,22 +452,22 @@ t_jit_err swarm_new_agents(t_swarm *x, t_swr_ind cur, t_swr_ind max)
 
   // Add the required number of active agents
   for (t_swr_ind cnt = 0; cnt < cur; cnt++) { swarm_add(x, NULL, 0, NULL); }
-  
+
   return JIT_ERR_NONE;
 }
 
-/****************************************************************
-*  Iterate the swarm system.
-*
-*  Calculate one iteration of the swarm system, and update the Jitter matrices.
-*
-*  @param x A pointer to the t_swarm structure.
-*/
-void swarm_iter(t_swarm *x)
-{
+//******************************************************************************
+//  Iterate the swarm system.
+//
+//  Calculate one iteration of the swarm system, and update the Jitter matrices.
+//
+//  @param x A pointer to the t_swarm structure.
+//
+void swarm_iter(t_swarm* x) {
+
   TRACE_F("jit_swarm_iter");
 
-  t_agent *agent = NULL;
+  t_agent* agent = NULL;
 
   // Calculate the average position and velocity
   swarm_average(x);
@@ -499,16 +499,16 @@ void swarm_iter(t_swarm *x)
   return;
 }
 
-/****************************************************************
-*  Calculate the average position and velocity of the swarm.
-*/
-void swarm_average(t_swarm *x)
-{
-  t_agent     *agent = NULL;
-  t_swr_float *X = NULL;
-  t_swr_float *dX = NULL;
-  t_swr_float *Xa = x->pos_avg;
-  t_swr_float *dXa = x->vel_avg;
+//******************************************************************************
+//  Calculate the average position and velocity of the swarm.
+//
+void swarm_average(t_swarm* x) {
+
+  t_agent*     agent = NULL;
+  t_swr_float* X = NULL;
+  t_swr_float* dX = NULL;
+  t_swr_float* Xa = x->pos_avg;
+  t_swr_float* dXa = x->vel_avg;
   t_swr_float  mult;
   t_swr_ind    cnt = 0;
 
@@ -535,14 +535,14 @@ void swarm_average(t_swarm *x)
   return;
 }
 
-/****************************************************************
-*  Calculate the new position vectors of the swarm's agents.
-*/
-void swarm_move(t_swarm *x)
-{
-  t_agent     *agent = NULL;
-  t_swr_float *X = NULL;
-  t_swr_float *dX = NULL;
+//******************************************************************************
+//  Calculate the new position vectors of the swarm's agents.
+//
+void swarm_move(t_swarm* x) {
+
+  t_agent*     agent = NULL;
+  t_swr_float* X = NULL;
+  t_swr_float* dX = NULL;
 
   // Calculate new positions
   for (t_swr_ind ind = 0; ind < x->agent_cnt; ind++) {
@@ -556,19 +556,19 @@ void swarm_move(t_swarm *x)
   return;
 }
 
-/****************************************************************
-*  Track statistics on the agents.
-*
-*  Then used to evaluate the fitness of the agents.
-*
-*  @param x A pointer to the t_swarm structure.
-*/
-void swarm_track_stat(t_swarm *x)
-{
+//******************************************************************************
+//  Track statistics on the agents.
+//
+//  Then used to evaluate the fitness of the agents.
+//
+//  @param x A pointer to the t_swarm structure.
+//
+void swarm_track_stat(t_swarm* x) {
+
   TRACE_F("swarm_track_stat");
 
   // Loop through the active agents
-  t_agent *agent = NULL;
+  t_agent* agent = NULL;
   t_swr_float i_DX, i_DY, i_DV;
   int X, Y, V, bin_ind;
 
@@ -595,12 +595,12 @@ void swarm_track_stat(t_swarm *x)
 
     // Bin the agent's velocity
     V = (int)(agent->nvel * i_DV);
-    
+
     // Clamp the index
     bin_ind = (V >= BIN_CNT_VEL) ?
       BIN_CNT_VEL - 1 :
       (V < 0) ? 0 : V;
-    
+
     // Increment the corresponding bin counter
     (agent->bin_vel[bin_ind])++;
   }
@@ -608,17 +608,17 @@ void swarm_track_stat(t_swarm *x)
   return;
 }
 
-/****************************************************************
-*  Refresh the array of active agents.
-*
-*  Called every time there is a change in active status.
-*
-*  @param x A pointer to the t_swarm structure.
-*/
-void swarm_refresh_act(t_swarm *x)
-{
-  t_agent *agent;
-  t_swr_ind *agent_act = x->agent_act;
+//******************************************************************************
+//  Refresh the array of active agents.
+//
+//  Called every time there is a change in active status.
+//
+//  @param x A pointer to the t_swarm structure.
+//
+void swarm_refresh_act(t_swarm* x) {
+
+  t_agent* agent;
+  t_swr_ind* agent_act = x->agent_act;
 
   for (t_swr_ind ind = 0; ind < x->agent_max; ind++) {
     agent = x->agent_arr + ind;
@@ -626,27 +626,27 @@ void swarm_refresh_act(t_swarm *x)
   }
 
   if (agent_act - x->agent_act != x->agent_cnt) {
-    jit_object_error((t_object *)x, "swarm_refresh_act:  Invalid active agents array.");
+    jit_object_error((t_object*)x, "swarm_refresh_act:  Invalid active agents array.");
   }
 
   return;
 }
 
-/****************************************************************
-*  Add an agent to the active list.
-*/
-t_agent *agent_add(t_swarm *x)
-{
+//******************************************************************************
+//  Add an agent to the active list.
+//
+t_agent* agent_add(t_swarm* x) {
+
   TRACE("agent_add");
 
   if (x->agent_cnt >= x->agent_max) { return NULL; }
 
   // Loop to find the first inactive agent
-  t_agent *agent = x->agent_arr;
+  t_agent* agent = x->agent_arr;
   while ((agent != x->agent_arr + x->agent_max) && (IS_ACTIVE(agent))) { agent++; }
 
   if (agent == x->agent_arr + x->agent_max) {
-    jit_object_error((t_object *)x, "agent_add:  No inactive agent found.");
+    jit_object_error((t_object*)x, "agent_add:  No inactive agent found.");
     return NULL;
   }
 
@@ -661,20 +661,20 @@ t_agent *agent_add(t_swarm *x)
   return agent;
 }
 
-/****************************************************************
-*  Remove an agent from the active list.
-*
-*   @param agent Either NULL to remove the first active agent from the back
-*     Or the pointer of an active agent
-*/
-void agent_remove(t_swarm *x, t_agent *agent)
-{
+//******************************************************************************
+//  Remove an agent from the active list.
+//
+//  @param agent Either NULL to remove the first active agent from the back
+//  Or the pointer of an active agent
+//
+void agent_remove(t_swarm* x, t_agent* agent) {
+
   TRACE("agent_remove");
 
   // If a pointer to an agent is provided
   if (agent) {
     if (IS_INACTIVE(agent)) {
-      jit_object_error((t_object *)x, "agent_remove:  Invalid action. Agent is inactive.");
+      jit_object_error((t_object*)x, "agent_remove:  Invalid action. Agent is inactive.");
       return;
     }
   }
@@ -688,7 +688,7 @@ void agent_remove(t_swarm *x, t_agent *agent)
     do { agent--; } while (IS_INACTIVE(agent) && (agent != x->agent_arr));
 
     if (IS_INACTIVE(agent)) {
-      jit_object_error((t_object *)x, "swarm_remove:  No active agent found.");
+      jit_object_error((t_object*)x, "swarm_remove:  No active agent found.");
       return;
     }
   }
@@ -703,17 +703,17 @@ void agent_remove(t_swarm *x, t_agent *agent)
   return;
 }
 
-/****************************************************************
-*  Initialize an agent.
-*
-*  Reset an agent by setting its parameters to default values.
-*  Does not allocate the structure or change its active status.
-*
-*  @param x A pointer to the t_swarm structure.
-*  @param agent A pointer to the t_agent structure.
-*/
-void agent_init(t_swarm *x, t_agent *agent)
-{
+//******************************************************************************
+//  Initialize an agent.
+//
+//  Reset an agent by setting its parameters to default values.
+//  Does not allocate the structure or change its active status.
+//
+//  @param x A pointer to the t_swarm structure.
+//  @param agent A pointer to the t_agent structure.
+//
+void agent_init(t_swarm* x, t_agent* agent) {
+
   TRACE_F("agent_init");
 
   agent->state = ST_NULL;
@@ -750,18 +750,18 @@ void agent_init(t_swarm *x, t_agent *agent)
   return;
 }
 
-/****************************************************************
-*  Set an agent to hatchin cntd iterations.
-*  
-*  @param cntd countdown to hatching,
-*    or if CNTD_RAND, the countdown is set randomly
-*/
-void agent_seed(t_swarm *x, t_agent *agent, t_swr_cnt cntd)
-{
+//******************************************************************************
+//  Set an agent to hatchin cntd iterations.
+//
+//  @param cntd countdown to hatching,
+//  or if CNTD_RAND, the countdown is set randomly
+//
+void agent_seed(t_swarm* x, t_agent* agent, t_swr_cnt cntd) {
+
   TRACE("agent_seed");
 
   if (IS_INACTIVE(agent)) {
-    jit_object_error((t_object *)x, "agent_seed:  Invalid action. Agent is inactive.");
+    jit_object_error((t_object*)x, "agent_seed:  Invalid action. Agent is inactive.");
     return;
   }
 
@@ -774,14 +774,14 @@ void agent_seed(t_swarm *x, t_agent *agent, t_swr_cnt cntd)
   return;
 }
 
-/****************************************************************
-*  Post information on an agent to the Max console.
-*
-*  @param x A pointer to the t_swarm structure.
-*  @param agent A pointer to the t_agent structure.
-*/
-void agent_post(t_swarm *x, t_agent *agent)
-{
+//******************************************************************************
+//  Post information on an agent to the Max console.
+//
+//  @param x A pointer to the t_swarm structure.
+//  @param agent A pointer to the t_agent structure.
+//
+void agent_post(t_swarm* x, t_agent* agent) {
+
   post("  %i:  Act: %i - Pos: %.2f %.2f %.2f - Vel: %.2f %.2f %.2f - NVel: %.2f - Size: %.2f - Col: %.2f %.2f %.2f %.2f",
     (int)(agent - x->agent_arr), agent->state, agent->pos[0], agent->pos[1], agent->pos[2],
     agent->vel[0], agent->vel[1], agent->vel[2], agent->nvel, agent->size,
@@ -809,15 +809,15 @@ void agent_post(t_swarm *x, t_agent *agent)
   return;
 }
 
-/****************************************************************
-*  Change the state of an agent.
-*/
-void agent_state_change(t_swarm *x, t_agent *agent)
-{
+//******************************************************************************
+//  Change the state of an agent.
+//
+void agent_state_change(t_swarm* x, t_agent* agent) {
+
   TRACE("agent_state_change");
 
   if (IS_INACTIVE(agent)) {
-    jit_object_error((t_object *)x, "agent_state_change:  Invalid action. Agent is inactive.");
+    jit_object_error((t_object*)x, "agent_state_change:  Invalid action. Agent is inactive.");
     return;
   }
 
@@ -863,43 +863,43 @@ void agent_state_change(t_swarm *x, t_agent *agent)
     break;
 
   default:
-    jit_object_error((t_object *)x, "agent_state_change:  Invalid state:  %i", agent->state);
+    jit_object_error((t_object*)x, "agent_state_change:  Invalid state:  %i", agent->state);
     break;
   }
   return;
 }
 
-/****************************************************************
-*  Iteration function when the agent is hatching.
-*
-*  Ramp the size from 0, and ramp the color from white.
-*/
-void agent_iter_hatching(t_swarm *x, t_agent *agent)
-{
+//******************************************************************************
+//  Iteration function when the agent is hatching.
+//
+//  Ramp the size from 0, and ramp the color from white.
+//
+void agent_iter_hatching(t_swarm* x, t_agent* agent) {
+
   t_swr_float r = (t_swr_float)agent->age / (agent->age + agent->cntd);
 
   agent->size = agent->size_ref * r;
-  
+
   for (int c = 0; c < 3; c++) {
     agent->col[c] = (agent->age < agent->cntd) ? 1.0f :
       2.0f * (agent->col_ref[c] - 1) * r + 2 - agent->col_ref[c];
   }
 }
 
-/****************************************************************
-*  Iteration function when the agent is flying.
-*
-*  Apply acceleration to velocity vector.
-*/
-void agent_iter_flying(t_swarm *x, t_agent *agent)
-{
-  t_swr_float *X = agent->pos;
-  t_swr_float *X2 = NULL;
-  t_swr_float *dX = agent->vel;
-  t_swr_float *Xa = x->pos_avg;
-  t_swr_float *dXa = x->vel_avg;
+//******************************************************************************
+//  Iteration function when the agent is flying.
+//
+//  Apply acceleration to velocity vector.
+//
+void agent_iter_flying(t_swarm* x, t_agent* agent) {
+
+  t_swr_float* X = agent->pos;
+  t_swr_float* X2 = NULL;
+  t_swr_float* dX = agent->vel;
+  t_swr_float* Xa = x->pos_avg;
+  t_swr_float* dXa = x->vel_avg;
   t_swr_float  mult, norm;
-  t_agent     *agent2 = NULL;
+  t_agent*     agent2 = NULL;
 
   // Inertia
   mult = agent->gene_val[GENE_INERT_MUL];
@@ -935,7 +935,7 @@ void agent_iter_flying(t_swarm *x, t_agent *agent)
       V2D_V_pe_S_V_V(dX, mult, X2, X);
     }
 
-  }   // End second loop through agents
+  }  // End second loop through agents
 
   // Brownian motion
   mult = agent->gene_val[GENE_BROWN_MUL] * BROWN_MUL_BASE;
@@ -972,13 +972,13 @@ void agent_iter_flying(t_swarm *x, t_agent *agent)
   return;
 }
 
-/****************************************************************
-*  Iteration function when the agent is dying.
-*
-*  Ramp the color to black, and ramp the velocity to 0.
-*/
-void agent_iter_dying(t_swarm *x, t_agent *agent)
-{
+//******************************************************************************
+//  Iteration function when the agent is dying.
+//
+//  Ramp the color to black, and ramp the velocity to 0.
+//
+void agent_iter_dying(t_swarm* x, t_agent* agent) {
+
   t_swr_float r = (t_swr_float)agent->age / (agent->age + agent->cntd);
 
   for (int c = 0; c < 3; c++) {
@@ -990,14 +990,14 @@ void agent_iter_dying(t_swarm *x, t_agent *agent)
   }
 }
 
-/****************************************************************
-*  Utility function to get a random time, uniform distribution.
-*
-*  @param t the average time
-*  @param dt +/- time value 
-*/
-t_swr_cnt rand_time(t_swr_float t, t_swr_float dt)
-{
+//******************************************************************************
+//  Utility function to get a random time, uniform distribution.
+//
+//  @param t the average time
+//  @param dt +/- time value
+//
+t_swr_cnt rand_time(t_swr_float t, t_swr_float dt) {
+
   t_swr_cnt r = (t_swr_cnt)(30 * t * (1 + (2.0f * rand() / RAND_MAX - 1) * dt));
 
   return max(r, 1);
